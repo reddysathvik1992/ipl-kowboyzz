@@ -178,7 +178,6 @@ li {
 <!-- LOGIN (VISIBLE FIRST) -->
 <div class="card" id="login">
   <input id="name" placeholder="Enter Name">
-  <input id="pass" placeholder="Admin Password (optional)">
   <button onclick="login()">Continue</button>
 </div>
 
@@ -366,8 +365,6 @@ function isMatchLocked(matchId){
 
 async function login(){
   const name = document.getElementById("name").value;
-  const pass = document.getElementById("pass").value;
-
   if(!name){
     alert("Enter name");
     return;
