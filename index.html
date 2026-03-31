@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>IPL Contest</title>
+
+<style>
+/* ===================== */
+/* 🌐 BASE STYLING */
+/* ===================== */
+body {
+  font-family: Arial, sans-serif;
+  background: #0b1a2f;
+  color: white;
+  margin: 0;
+  padding: 0;
+}
+
+/* Title */
+h1 {
+  text-align: center;
+  margin: 15px 0;
+}
+
+/* ===================== */
+/* 🧱 LAYOUT */
+/* ===================== */
+.main-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 20px;
+}
+
+.left-panel,
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ===================== */
+/* 📦 CARDS */
+/* ===================== */
+.card {
+  background: #1e2d44;
+  padding: 20px;
+  margin: 10px;
+  width: 90%;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Card headings */
+.card h3 {
+  text-align: center;
+  color: #ffd700;
+}
+
+/* ===================== */
+/* 🧾 FORM ELEMENTS */
+/* ===================== */
+label {
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+}
+
+select,
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  background: white;
+  color: black;
+  font-weight: bold;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+}
+
+/* Dropdown options */
+select option {
+  color: black;
+  background: white;
+}
+
+/* ===================== */
+/* 🔘 BUTTONS */
+/* ===================== */
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.submit {
+  background: #28a745;
+  color: white;
+}
+
+.submit:hover {
+  background: #218838;
+}
+
+/* ===================== */
+/* 📊 TABLE (OVERALL BOARD) */
+/* ===================== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th {
+  background: #142c4f;
+  color: #ffd700;
+  padding: 10px;
+}
+
+td {
+  background: #0f2238;
+  color: white;   /* 👈 ADD THIS */
+  padding: 10px;
+  text-align: center;
+}
+
+tr:nth-child(even) td {
+  background: #112a44;
+}
+
+/* ===================== */
+/* 🏆 MATCH LIST */
+/* ===================== */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: #0f2238;
+  margin: 6px 0;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  text-align: center;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ===================== */
+/* 📱 MOBILE RESPONSIVE */
+/* ===================== */
+@media (max-width: 768px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    width: 95%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>🏏 IPL Contest</h1>
+
+<!-- LOGIN (VISIBLE FIRST) -->
+<div class="card" id="login">
+  <input id="name" placeholder="Enter Name">
+  <input id="pass" placeholder="Admin Password (optional)">
+  <button onclick="login()">Continue</button>
+</div>
+
+<div class="main-layout" id="mainLayout" style="display:none;">
+
+  <!-- LEFT -->
+  <div class="left-panel">  
+
+    <!-- USER -->
+    <div class="card" id="userPanel" style="display:none;">
+      <h3 id="welcome"></h3>
+      <select id="match" onchange="updateTeams()"></select>
+
+      <label>Winner</label>
+      <select id="winner"></select>
+
+      <label>Batsman</label>
+      <select id="batsman"><option>KOHLI</option><option>ROHIT</option></select>
+
+      <label>Runs</label>
+      <select id="runs"><option>150+</option><option>180+</option><option>200+</option></select>
+
+      <label>Wicket</label>
+      <select id="wicket"><option>1</option><option>2</option></select>
+
+      <label>Sixes</label>
+      <select id="sixes"><option>5+</option><option>10+</option></select>
+
+      <button class="submit" onclick="submitAnswer()">Submit</button>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="card" id="adminPanel" style="display:none;">
+      <h3>Admin Panel</h3>
+      <select id="adminMatch" onchange="updateAdminTeams()"></select>
+
+      <label>Winner</label>
+      <select id="adminWinner"></select>
+
+      <label>Batsman</label>
+      <select id="adminBatsman"><option>KOHLI</option><option>ROHIT</option></select>
+
+      <label>Runs</label>
+      <select id="adminRuns"><option>150+</option><option>180+</option><option>200+</option></select>
+
+      <label>Wicket</label>
+      <select id="adminWicket"><option>1</option><option>2</option></select>
+
+      <label>Sixes</label>
+      <select id="adminSixes"><option>5+</option><option>10+</option></select>
+
+      <button onclick="submitResult()">Save Result</button>
+    </div>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel">
+
+    <!-- MATCH -->
+    <div class="card">
+      <h3>🥇 Match Leaderboard</h3>
+      <select id="boardMatch" onchange="loadBoards()"></select>
+      <ul id="matchBoard"></ul>
+    </div>
+
+    <!-- OVERALL -->
+    <div class="card">
+      <h3>🏆 Overall Leaderboard</h3>
+      <table id="overallBoard">
+        <thead>
+          <tr><th>Rank</th><th>Name</th><th>Score</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCBtPDhhgWeV3H3AZlJEgfDwFoQ9YhVchY",
+  authDomain: "sathvik-bd250.firebaseapp.com",
+  projectId: "sathvik-bd250"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const ADMIN_PASS = "1234";
+
+const matches = [
+ {id:"1", home:"RCB", away:"SRH", date:"28-Mar 7:30 PM"},
+ {id:"2", home:"MI", away:"KKR", date:"29-Mar 7:30 PM"},
+ {id:"3", home:"RR", away:"CSK", date:"30-Mar 7:30 PM"},
+ {id:"4", home:"PBKS", away:"GT", date:"31-Mar 7:30 PM"},
+ {id:"5", home:"LSG", away:"DC", date:"01-Apr 7:30 PM"},
+ {id:"6", home:"KKR", away:"SRH", date:"02-Apr 7:30 PM"},
+ {id:"7", home:"CSK", away:"PBKS", date:"03-Apr 7:30 PM"},
+ {id:"8", home:"DC", away:"MI", date:"04-Apr 3:30 PM"},
+ {id:"9", home:"GT", away:"RR", date:"04-Apr 7:30 PM"},
+ {id:"10", home:"SRH", away:"LSG", date:"05-Apr 3:30 PM"},
+ {id:"11", home:"RCB", away:"CSK", date:"05-Apr 7:30 PM"},
+ {id:"12", home:"KKR", away:"PBKS", date:"06-Apr 7:30 PM"},
+ {id:"13", home:"RR", away:"MI", date:"07-Apr 7:30 PM"},
+ {id:"14", home:"DC", away:"GT", date:"08-Apr 7:30 PM"},
+ {id:"15", home:"KKR", away:"LSG", date:"09-Apr 7:30 PM"},
+ {id:"16", home:"RR", away:"RCB", date:"10-Apr 7:30 PM"},
+ {id:"17", home:"PBKS", away:"SRH", date:"11-Apr 3:30 PM"},
+ {id:"18", home:"CSK", away:"DC", date:"11-Apr 7:30 PM"},
+ {id:"19", home:"LSG", away:"GT", date:"12-Apr 3:30 PM"},
+ {id:"20", home:"MI", away:"RCB", date:"12-Apr 7:30 PM"},
+ {id:"21", home:"SRH", away:"RR", date:"13-Apr 7:30 PM"},
+ {id:"22", home:"CSK", away:"KKR", date:"14-Apr 7:30 PM"},
+ {id:"23", home:"RCB", away:"LSG", date:"15-Apr 7:30 PM"},
+ {id:"24", home:"MI", away:"PBKS", date:"16-Apr 7:30 PM"},
+ {id:"25", home:"GT", away:"KKR", date:"17-Apr 7:30 PM"},
+ {id:"26", home:"RCB", away:"DC", date:"18-Apr 3:30 PM"},
+ {id:"27", home:"SRH", away:"CSK", date:"18-Apr 7:30 PM"},
+ {id:"28", home:"KKR", away:"RR", date:"19-Apr 3:30 PM"},
+ {id:"29", home:"PBKS", away:"LSG", date:"19-Apr 7:30 PM"},
+ {id:"30", home:"GT", away:"MI", date:"20-Apr 7:30 PM"},
+ {id:"31", home:"SRH", away:"DC", date:"21-Apr 7:30 PM"},
+ {id:"32", home:"LSG", away:"RR", date:"22-Apr 7:30 PM"},
+ {id:"33", home:"MI", away:"CSK", date:"23-Apr 7:30 PM"},
+ {id:"34", home:"RCB", away:"GT", date:"24-Apr 7:30 PM"},
+ {id:"35", home:"DC", away:"PBKS", date:"25-Apr 3:30 PM"},
+ {id:"36", home:"RR", away:"SRH", date:"25-Apr 7:30 PM"},
+ {id:"37", home:"GT", away:"CSK", date:"26-Apr 3:30 PM"},
+ {id:"38", home:"LSG", away:"KKR", date:"26-Apr 7:30 PM"},
+ {id:"39", home:"DC", away:"RCB", date:"27-Apr 7:30 PM"},
+ {id:"40", home:"PBKS", away:"RR", date:"28-Apr 7:30 PM"},
+ {id:"41", home:"MI", away:"SRH", date:"29-Apr 7:30 PM"},
+ {id:"42", home:"GT", away:"RCB", date:"30-Apr 7:30 PM"},
+ {id:"43", home:"RR", away:"DC", date:"01-May 7:30 PM"},
+ {id:"44", home:"CSK", away:"MI", date:"02-May 7:30 PM"},
+ {id:"45", home:"SRH", away:"KKR", date:"03-May 3:30 PM"},
+ {id:"46", home:"GT", away:"PBKS", date:"03-May 7:30 PM"},
+ {id:"47", home:"MI", away:"LSG", date:"04-May 7:30 PM"},
+ {id:"48", home:"DC", away:"CSK", date:"05-May 7:30 PM"},
+ {id:"49", home:"SRH", away:"PBKS", date:"06-May 7:30 PM"},
+ {id:"50", home:"LSG", away:"RCB", date:"07-May 7:30 PM"},
+ {id:"51", home:"DC", away:"KKR", date:"08-May 7:30 PM"},
+ {id:"52", home:"RR", away:"GT", date:"09-May 7:30 PM"},
+ {id:"53", home:"CSK", away:"LSG", date:"10-May 3:30 PM"},
+ {id:"54", home:"RCB", away:"MI", date:"10-May 7:30 PM"},
+ {id:"55", home:"PBKS", away:"DC", date:"11-May 7:30 PM"},
+ {id:"56", home:"GT", away:"SRH", date:"12-May 7:30 PM"},
+ {id:"57", home:"RCB", away:"KKR", date:"13-May 7:30 PM"},
+ {id:"58", home:"PBKS", away:"MI", date:"14-May 7:30 PM"},
+ {id:"59", home:"LSG", away:"CSK", date:"15-May 7:30 PM"},
+ {id:"60", home:"KKR", away:"GT", date:"16-May 7:30 PM"},
+ {id:"61", home:"PBKS", away:"RCB", date:"17-May 3:30 PM"},
+ {id:"62", home:"DC", away:"RR", date:"17-May 7:30 PM"},
+ {id:"63", home:"CSK", away:"SRH", date:"18-May 7:30 PM"},
+ {id:"64", home:"RR", away:"LSG", date:"19-May 7:30 PM"},
+ {id:"65", home:"KKR", away:"MI", date:"20-May 7:30 PM"},
+ {id:"66", home:"CSK", away:"GT", date:"21-May 7:30 PM"},
+ {id:"67", home:"SRH", away:"RCB", date:"22-May 7:30 PM"},
+ {id:"68", home:"LSG", away:"PBKS", date:"23-May 7:30 PM"},
+ {id:"69", home:"MI", away:"RR", date:"24-May 3:30 PM"},
+ {id:"70", home:"KKR", away:"DC", date:"24-May 7:30 PM"}
+];
+
+function isMatchLocked(matchId){
+  const m = matches.find(x=>x.id===matchId);
+
+  // Convert match date (simple logic)
+  const matchTime = new Date(m.date + " 2026"); // year added
+  const now = new Date();
+
+  return now > matchTime;
+}
+
+function login(){
+  const name = document.getElementById("name").value;
+  const pass = document.getElementById("pass").value;
+
+  if(!name){
+    alert("Enter name");
+    return;
+  }
+
+  localStorage.setItem("user", name);
+
+  // Hide login
+  document.getElementById("login").style.display = "none";
+
+  // Show main layout
+  document.getElementById("mainLayout").style.display = "grid";
+
+  // Admin vs User
+  if(pass === ADMIN_PASS){
+    document.getElementById("adminPanel").style.display="block";
+    document.getElementById("userPanel").style.display="none";
+  } else {
+    document.getElementById("userPanel").style.display="block";
+    document.getElementById("adminPanel").style.display="none";
+    document.getElementById("welcome").innerText="Welcome " + name;
+  }
+
+  loadMatches();
+
+  db.collection("answers").onSnapshot(loadBoards);
+  db.collection("results").onSnapshot(loadBoards);
+
+  loadBoards();
+}
+function loadMatches(){
+  ["match","adminMatch","boardMatch"].forEach(id=>{
+    const el = document.getElementById(id);
+    el.innerHTML="";
+    matches.forEach(m=>{
+      el.innerHTML += `<option value="${m.id}">${m.home} vs ${m.away} - ${m.date}</option>`;
+    });
+  });
+
+  updateTeams();
+  updateAdminTeams();
+}
+
+function updateTeams(){
+  const m = matches.find(x=>x.id===match.value);
+  winner.innerHTML = `<option>${m.home}</option><option>${m.away}</option>`;
+}
+
+function updateAdminTeams(){
+  const m = matches.find(x=>x.id===adminMatch.value);
+  adminWinner.innerHTML = `<option>${m.home}</option><option>${m.away}</option>`;
+}
+
+async function submitAnswer(){
+
+  const user = localStorage.getItem("user");
+  const selectedMatch = matches.find(m => m.id === match.value);
+
+  // 🔒 LOCK CHECK
+  if(isMatchLocked(match.value)){
+    alert("Prediction Locked 🔒");
+    return;
+  }
+
+  const matchKey = `${selectedMatch.home}_vs_${selectedMatch.away}`;
+
+  await db.collection("answers").doc(matchKey).set({
+    [user]: {
+      match: `${selectedMatch.home} vs ${selectedMatch.away}`,
+      winner: winner.value,
+      batsman: batsman.value,
+      runs: runs.value,
+      wicket: wicket.value,
+      sixes: sixes.value
+    }
+  }, { merge:true });
+
+  alert("Saved ✅");
+}
+
+async function submitResult(){
+
+  const selectedMatch = matches.find(m => m.id === adminMatch.value);
+  const matchKey = `${selectedMatch.home}_vs_${selectedMatch.away}`;
+
+  await db.collection("results").doc(matchKey).set({
+    winner: adminWinner.value,
+    batsman: adminBatsman.value,
+    runs: adminRuns.value,
+    wicket: adminWicket.value,
+    sixes: adminSixes.value
+  });
+
+  alert("Result saved ✅");
+  loadBoards();
+}
+
+function getRankedList(arr){
+  let ranked = [];
+  let prevScore = null;
+  let rank = 0;
+
+  arr.forEach((item, index)=>{
+    if(item.score !== prevScore){
+      rank = index + 1;
+    }
+    ranked.push({
+      user: item.user,
+      score: item.score,
+      rank: rank
+    });
+    prevScore = item.score;
+  });
+
+  return ranked;
+}
+
+async function loadBoards(){
+
+  const answersSnap = await db.collection("answers").get();
+  const resultsSnap = await db.collection("results").get();
+
+  let answers = {}, results = {};
+
+  answersSnap.forEach(d=>answers[d.id]=d.data());
+  resultsSnap.forEach(d=>results[d.id]=d.data());
+
+  const selectedMatch = matches.find(x => x.id === boardMatch.value);
+  const m = `${selectedMatch.home}_vs_${selectedMatch.away}`;
+
+  let matchScores = [];
+  let overall = {};
+
+  // =====================
+  // MATCH LEADERBOARD
+  // =====================
+  if(answers[m] && results[m]){
+    Object.keys(answers[m]).forEach(user=>{
+      let a = answers[m][user];
+      let r = results[m];
+
+      let score = 0;
+      if(a.winner===r.winner) score+=10;
+      if(a.batsman===r.batsman) score+=10;
+      if(a.runs===r.runs) score+=10;
+      if(a.wicket===r.wicket) score+=10;
+      if(a.sixes===r.sixes) score+=10;
+
+      matchScores.push({user, score});
+    });
+  }
+
+  matchScores.sort((a,b)=>b.score-a.score);
+
+const rankedMatch = getRankedList(matchScores);
+
+const top5 = rankedMatch.slice(0,5);
+
+document.getElementById("matchBoard").innerHTML =
+  top5.map(x=>`<li>${x.rank}. ${x.user} - ${x.score}</li>`).join("") +
+  `<button onclick="showAllMatch()">View All</button>`;
+
+window.allMatchData = rankedMatch;
+
+
+
+  // =====================
+  // 🏆 OVERALL LEADERBOARD
+  // =====================
+  Object.keys(answers).forEach(matchKey=>{
+    if(!results[matchKey]) return;
+
+    Object.keys(answers[matchKey]).forEach(user=>{
+      let a = answers[matchKey][user];
+      let r = results[matchKey];
+
+      let score = 0;
+      if(a.winner===r.winner) score+=10;
+      if(a.batsman===r.batsman) score+=10;
+      if(a.runs===r.runs) score+=10;
+      if(a.wicket===r.wicket) score+=10;
+      if(a.sixes===r.sixes) score+=10;
+
+      overall[user] = (overall[user] || 0) + score;
+    });
+  });
+
+let sorted = Object.entries(overall)
+  .map(x=>({user:x[0], score:x[1]}))
+  .sort((a,b)=>b.score-a.score);
+
+const rankedOverall = getRankedList(sorted);
+const top5Overall = rankedOverall.slice(0,5);
+
+window.allOverallData = rankedOverall;
+
+const tbody = document.querySelector("#overallBoard tbody");
+
+tbody.innerHTML = top5Overall.map((x, i) => {
+
+  let medal = x.rank;
+
+  if(x.rank === 1) medal = "🥇";
+  else if(x.rank === 2) medal = "🥈";
+  else if(x.rank === 3) medal = "🥉";
+
+  let style = "";
+
+  if(x.rank === 1) style = "background: gold; color:black;";
+  else if(x.rank === 2) style = "background: silver; color:black;";
+  else if(x.rank === 3) style = "background: #cd7f32; color:black;";
+  else style = "color:white;";
+
+  return `
+    <tr style="${style}">
+      <td>${medal}</td>
+      <td>${x.user}</td>
+      <td>${x.score}</td>
+    </tr>
+  `;
+}).join("") +
+`<tr><td colspan="3"><button onclick="showAllOverall()">View All</button></td></tr>`;
+}
+
+function showAllMatch(){
+  document.getElementById("matchBoard").innerHTML =
+    window.allMatchData.map(x=>`<li>${x.rank}. ${x.user} - ${x.score}</li>`).join("");
+}
+
+function showAllOverall(){
+  const tbody = document.querySelector("#overallBoard tbody");
+
+  tbody.innerHTML = window.allOverallData.map(x=>`
+    <tr>
+      <td>${x.rank}</td>
+      <td>${x.user}</td>
+      <td>${x.score}</td>
+    </tr>
+  `).join("");
+}
+
+</script>
+</div>
+</body>
+</html>
