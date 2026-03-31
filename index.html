@@ -425,7 +425,6 @@ async function submitAnswer(){
   const user = localStorage.getItem("user");
   const selectedMatch = matches.find(m => m.id === match.value);
 
-  // 🔒 LOCK CHECK
   if(isMatchLocked(match.value)){
     alert("Prediction Locked 🔒");
     return;
@@ -433,18 +432,22 @@ async function submitAnswer(){
 
   const matchKey = `${selectedMatch.home}_vs_${selectedMatch.away}`;
 
-  await db.collection("answers").doc(matchKey).set({
-    [user]: {
+  await db
+    .collection("answers")
+    .doc(matchKey)
+    .collection("users")
+    .doc(user)
+    .set({
       match: `${selectedMatch.home} vs ${selectedMatch.away}`,
       winner: winner.value,
       batsman: batsman.value,
       runs: runs.value,
       wicket: wicket.value,
-      sixes: sixes.value
-    }
-  }, { merge:true });
+      sixes: sixes.value,
+      updatedAt: new Date()
+    });
 
-  alert("Saved ✅");
+  alert("Saved / Updated ✅");
 }
 
 async function submitResult(){
@@ -486,12 +489,9 @@ function getRankedList(arr){
 
 async function loadBoards(){
 
-  const answersSnap = await db.collection("answers").get();
   const resultsSnap = await db.collection("results").get();
 
-  let answers = {}, results = {};
-
-  answersSnap.forEach(d=>answers[d.id]=d.data());
+  let results = {};
   resultsSnap.forEach(d=>results[d.id]=d.data());
 
   const selectedMatch = matches.find(x => x.id === boardMatch.value);
@@ -503,45 +503,68 @@ async function loadBoards(){
   // =====================
   // MATCH LEADERBOARD
   // =====================
-  if(answers[m] && results[m]){
-    Object.keys(answers[m]).forEach(user=>{
-      let a = answers[m][user];
-      let r = results[m];
 
-      let score = 0;
-      if(a.winner===r.winner) score+=10;
-      if(a.batsman===r.batsman) score+=10;
-      if(a.runs===r.runs) score+=10;
-      if(a.wicket===r.wicket) score+=10;
-      if(a.sixes===r.sixes) score+=10;
+  try {
+    const usersSnap = await db
+      .collection("answers")
+      .doc(m)
+      .collection("users")
+      .get();
 
-      matchScores.push({user, score});
-    });
+    if(results[m]){
+      usersSnap.forEach(doc=>{
+        const user = doc.id;
+        const a = doc.data();
+        const r = results[m];
+
+        let score = 0;
+        if(a.winner===r.winner) score+=10;
+        if(a.batsman===r.batsman) score+=10;
+        if(a.runs===r.runs) score+=10;
+        if(a.wicket===r.wicket) score+=10;
+        if(a.sixes===r.sixes) score+=10;
+
+        matchScores.push({user, score});
+      });
+    }
+
+  } catch (e) {
+    console.log("No answers yet");
   }
 
-  matchScores.sort((a,b)=>b.score-a.score);
+  // UI render (match)
+  if(matchScores.length === 0){
+    document.getElementById("matchBoard").innerHTML =
+      "<li>No submissions yet</li>";
+  } else {
+    matchScores.sort((a,b)=>b.score-a.score);
 
-const rankedMatch = getRankedList(matchScores);
+    const rankedMatch = getRankedList(matchScores);
+    const top5 = rankedMatch.slice(0,5);
 
-const top5 = rankedMatch.slice(0,5);
+    document.getElementById("matchBoard").innerHTML =
+      top5.map(x=>`<li>${x.rank}. ${x.user} - ${x.score}</li>`).join("") +
+      `<button onclick="showAllMatch()">View All</button>`;
 
-document.getElementById("matchBoard").innerHTML =
-  top5.map(x=>`<li>${x.rank}. ${x.user} - ${x.score}</li>`).join("") +
-  `<button onclick="showAllMatch()">View All</button>`;
-
-window.allMatchData = rankedMatch;
-
-
+    window.allMatchData = rankedMatch;
+  }
 
   // =====================
-  // 🏆 OVERALL LEADERBOARD
+  // OVERALL LEADERBOARD
   // =====================
-  Object.keys(answers).forEach(matchKey=>{
-    if(!results[matchKey]) return;
 
-    Object.keys(answers[matchKey]).forEach(user=>{
-      let a = answers[matchKey][user];
-      let r = results[matchKey];
+  for(const matchKey in results){
+
+    const usersSnap = await db
+      .collection("answers")
+      .doc(matchKey)
+      .collection("users")
+      .get();
+
+    usersSnap.forEach(doc=>{
+      const user = doc.id;
+      const a = doc.data();
+      const r = results[matchKey];
 
       let score = 0;
       if(a.winner===r.winner) score+=10;
@@ -552,43 +575,48 @@ window.allMatchData = rankedMatch;
 
       overall[user] = (overall[user] || 0) + score;
     });
-  });
+  }
 
-let sorted = Object.entries(overall)
-  .map(x=>({user:x[0], score:x[1]}))
-  .sort((a,b)=>b.score-a.score);
+  let sorted = Object.entries(overall)
+    .map(x=>({user:x[0], score:x[1]}))
+    .sort((a,b)=>b.score-a.score);
 
-const rankedOverall = getRankedList(sorted);
-const top5Overall = rankedOverall.slice(0,5);
+  const rankedOverall = getRankedList(sorted);
+  const top5Overall = rankedOverall.slice(0,5);
 
-window.allOverallData = rankedOverall;
+  window.allOverallData = rankedOverall;
 
-const tbody = document.querySelector("#overallBoard tbody");
+  const tbody = document.querySelector("#overallBoard tbody");
 
-tbody.innerHTML = top5Overall.map((x, i) => {
+  if(top5Overall.length === 0){
+    tbody.innerHTML = `<tr><td colspan="3">No data yet</td></tr>`;
+    return;
+  }
 
-  let medal = x.rank;
+  tbody.innerHTML = top5Overall.map((x) => {
 
-  if(x.rank === 1) medal = "🥇";
-  else if(x.rank === 2) medal = "🥈";
-  else if(x.rank === 3) medal = "🥉";
+    let medal = x.rank;
 
-  let style = "";
+    if(x.rank === 1) medal = "🥇";
+    else if(x.rank === 2) medal = "🥈";
+    else if(x.rank === 3) medal = "🥉";
 
-  if(x.rank === 1) style = "background: gold; color:black;";
-  else if(x.rank === 2) style = "background: silver; color:black;";
-  else if(x.rank === 3) style = "background: #cd7f32; color:black;";
-  else style = "color:white;";
+    let style = "";
 
-  return `
-    <tr style="${style}">
-      <td>${medal}</td>
-      <td>${x.user}</td>
-      <td>${x.score}</td>
-    </tr>
-  `;
-}).join("") +
-`<tr><td colspan="3"><button onclick="showAllOverall()">View All</button></td></tr>`;
+    if(x.rank === 1) style = "background: gold; color:black;";
+    else if(x.rank === 2) style = "background: silver; color:black;";
+    else if(x.rank === 3) style = "background: #cd7f32; color:black;";
+    else style = "color:white;";
+
+    return `
+      <tr style="${style}">
+        <td>${medal}</td>
+        <td>${x.user}</td>
+        <td>${x.score}</td>
+      </tr>
+    `;
+  }).join("") +
+  `<tr><td colspan="3"><button onclick="showAllOverall()">View All</button></td></tr>`;
 }
 
 function showAllMatch(){
