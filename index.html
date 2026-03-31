@@ -274,6 +274,111 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const match = document.getElementById("match");
+const winner = document.getElementById("winner");
+const batsman = document.getElementById("batsman");
+
+const squads = {
+  CSK: [
+    "Aman Khan","Jamie Overton","Shreyas Gopal","Zakary Foulkes",
+    "Gurjapneet Singh","Akeal Hosein","Matthew Short","MS Dhoni",
+    "Prashant Veer","Anshul Kamboj","Ayush Mhatre","Mukesh Choudhary",
+    "Matt Henry","Rahul Chahar","Sarfaraz Khan","Spencer Johnson",
+    "Dewald Brevis","Ruturaj Gaikwad","Shivam Dube","Noor Ahmad",
+    "Urvil Patel","Ramakrishna Ghosh","Sanju Samson","Khaleel Ahmed",
+    "Kartik Sharma","Nathan Ellis"
+  ],
+
+  DC: [
+    "Karun Nair","Pathum Nissanka","Madhav Tiwari","Sameer Rizvi",
+    "Ben Duckett","Auqib Nabi Dar","Axar Patel","Kyle Jamieson",
+    "Mitchell Starc","Abishek Porel","Prithvi Shaw","Ashutosh Sharma",
+    "Nitish Rana","Ajay Jadav Mandal","Dushmantha Chameera","Lungi Ngidi",
+    "Tristan Stubbs","Kuldeep Yadav","KL Rahul","Mukesh Kumar",
+    "Tripurana Vijay","Vipraj Nigam","T Natarajan","Sahil Parakh",
+    "David Miller"
+  ],
+
+  GT: [
+    "Kulwant Khejroliya","Kagiso Rabada","Mohammed Siraj","Prithvi Raj Yarra",
+    "Rahul Tewatia","Ashok Sharma","Gurnoor Brar","Jayant Yadav",
+    "Arshad Khan","Rashid Khan","Glenn Phillips","Ishant Sharma",
+    "Shubman Gill","Anuj Rawat","Ravisrinivasan Sai Kishore","Tom Banton",
+    "Sai Sudharsan","Washington Sundar","Kumar Kushagra","Luke Wood",
+    "Jason Holder","Prasidh Krishna","Jos Buttler","Nishant Sindhu",
+    "Manav Suthar","M Shahrukh Khan"
+  ],
+
+  RCB: [
+    "Bhuvneshwar Kumar","Virat Kohli","Vicky Ostwal","Vihaan Malhotra",
+    "Yash Dayal","Romario Shepherd","Jacob Bethell","Rajat Patidar",
+    "Tim David","Jordan Cox","Mangesh Yadav","Satvik Deswal",
+    "Josh Hazlewood","Venkatesh Iyer","Abhinandan Singh","Swapnil Singh",
+    "Jacob Duffy","Rasikh Salam Dar","Devdutt Padikkal","Jitesh Sharma",
+    "Krunal Pandya","Philip Salt","Kanishk Chouhan","Nuwan Thushara",
+    "Suyash Sharma"
+  ],
+
+  PBKS: [
+    "Cooper Connolly","Arshdeep Singh","Vishnu Vinod","Yuzvendra Chahal",
+    "Marco Jansen","Nehal Wadhera","Xavier Bartlett","Lockie Ferguson",
+    "Mitchell Owen","Vijaykumar Vyshak","Ben Dwarshuis","Priyansh Arya",
+    "Harnoor Singh","Musheer Khan","Suryansh Shedge","Prabhsimran Singh",
+    "Pyla Avinash","Praveen Dubey","Harpreet Brar","Yash Thakur",
+    "Marcus Stoinis","Shashank Singh","Azmatullah Omarzai","Vishal Nishad",
+    "Shreyas Iyer"
+  ],
+
+  KKR: [
+    "Finn Allen","Blessing Muzarabani","Manish Pandey","Varun Chakaravarthy",
+    "Harshit Rana","Umran Malik","Tejasvi Dahiya","Ajinkya Rahane",
+    "Angkrish Raghuvanshi","Vaibhav Arora","Sunil Narine","Rinku Singh",
+    "Akash Deep","Cameron Green","Ramandeep Singh","Rahul Tripathi",
+    "Rovman Powell","Sarthak Ranjan","Kartik Tyagi","Daksh Kamra",
+    "Matheesha Pathirana","Rachin Ravindra","Prashant Solanki",
+    "Navdeep Saini","Tim Seifert","Anukul Roy","Saurabh Dubey"
+  ],
+
+  SRH: [
+    "Heinrich Klaasen","Eshan Malinga","Praful Hinge","Nitish Kumar Reddy",
+    "Harshal Patel","Sakib Hussain","Smaran Ravichandran","Aniket Verma",
+    "Jack Edwards","Kamindu Mendis","Krains Fuletra","Shivang Kumar",
+    "David Payne","Onkar Tarmale","Abhishek Sharma","Shivam Mavi",
+    "Amit Kumar","Pat Cummins","Travis Head","Harsh Dubey",
+    "Salil Arora","Brydon Carse","Jaydev Unadkat","Ishan Kishan",
+    "Liam Livingstone","Zeeshan Ansari"
+  ],
+
+  RR: [
+    "Ravindra Jadeja","Yash Raj Punja","Nandre Burger","Vaibhav Sooryavanshi",
+    "Shimron Hetmyer","Ravi Bishnoi","Dasun Shanaka","Tushar Deshpande",
+    "Sushant Mishra","Shubham Dubey","Jofra Archer","Aman Rao Perala",
+    "Riyan Parag","Yashasvi Jaiswal","Brijesh Sharma","Dhruv Jurel",
+    "Lhuan-dre Pretorius","Kuldeep Sen","Sandeep Sharma","Ravi Singh",
+    "Donovan Ferreira","Sam Curran","Adam Milne","Kwena Maphaka",
+    "Yudhvir Singh Charak","Vignesh Puthur"
+  ],
+
+  LSG: [
+    "Ayush Badoni","Josh Inglis","Mitchell Marsh","Aiden Markram",
+    "Digvesh Singh Rathi","Manimaran Siddharth","Akash Maharaj Singh",
+    "Mohammed Shami","Mohsin Khan","Mukul Choudhary","Akshat Raghuwanshi",
+    "Abdul Samad","Anrich Nortje","Arshin Kulkarni","Wanindu Hasaranga",
+    "Naman Tiwari","Avesh Khan","Mayank Prabhu Yadav","Prince Yadav",
+    "Arjun Sachin Tendulkar","Himmat Singh","Nicholas Pooran",
+    "Matthew Breetzke","Shahbaz Ahmed","Rishabh Pant"
+  ],
+
+  MI: [
+    "Rohit Sharma","Shardul Thakur","Raghu Sharma","Will Jacks",
+    "AM Ghazanfar","Mayank Markande","Trent Boult","Tilak Varma",
+    "Mohammed Salahuddin Izhar","Ryan Rickelton","Sherfane Rutherford",
+    "Hardik Pandya","Raj Bawa","Quinton de Kock","Danish Malewar",
+    "Corbin Bosch","Atharva Ankolekar","Mitchell Santner",
+    "Deepak Chahar","Robin Minz","Naman Dhir","Suryakumar Yadav",
+    "Jasprit Bumrah","Mayank Rawat","Ashwani Kumar"
+  ]
+};
 
 async function isAdmin(user){
   const doc = await db.collection("admins").doc(user).get();
@@ -365,23 +470,32 @@ function isMatchLocked(matchId){
 
 async function login(){
   const name = document.getElementById("name").value;
+
   if(!name){
     alert("Enter name");
     return;
   }
 
+  // 🔥 CHECK if user exists in Firestore
+  const userDoc = await db.collection("users").doc(name).get();
+
+  if(!userDoc.exists){
+   document.getElementById("login").innerHTML += 
+  "<p style='color:red'>Access denied</p>";
+    return;
+  }
+  
+
+
+  // ✅ Allowed user
   localStorage.setItem("user", name);
 
-  // Hide login
   document.getElementById("login").style.display = "none";
-
-  // Show main layout
   document.getElementById("mainLayout").style.display = "grid";
 
-  // Admin vs User
-const adminCheck = await isAdmin(name);
+  const adminCheck = await isAdmin(name);
 
-if(adminCheck){
+  if(adminCheck){
     document.getElementById("adminPanel").style.display="block";
     document.getElementById("userPanel").style.display="none";
   } else {
@@ -397,6 +511,8 @@ if(adminCheck){
 
   loadBoards();
 }
+
+
 function loadMatches(){
   ["match","adminMatch","boardMatch"].forEach(id=>{
     const el = document.getElementById(id);
@@ -410,9 +526,21 @@ function loadMatches(){
   updateAdminTeams();
 }
 
-function updateTeams(){
+async function updateTeams(){
+
   const m = matches.find(x=>x.id===match.value);
+  if(!m) return;
+
   winner.innerHTML = `<option>${m.home}</option><option>${m.away}</option>`;
+
+  const homeplayers = squads[m.home] || [];
+  const awayplayers = squads[m.away] || [];
+
+  const allplayers = [...homeplayers, ...awayplayers];
+
+  batsman.innerHTML = allplayers
+    .map(p => `<option>${p}</option>`)
+    .join("");
 }
 
 function updateAdminTeams(){
