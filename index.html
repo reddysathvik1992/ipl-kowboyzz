@@ -276,7 +276,10 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-const ADMIN_PASS = "1234";
+async function isAdmin(user){
+  const doc = await db.collection("admins").doc(user).get();
+  return doc.exists;
+}
 
 const matches = [
  {id:"1", home:"RCB", away:"SRH", date:"28-Mar 7:30 PM"},
@@ -361,7 +364,7 @@ function isMatchLocked(matchId){
   return now > matchTime;
 }
 
-function login(){
+async function login(){
   const name = document.getElementById("name").value;
   const pass = document.getElementById("pass").value;
 
@@ -379,7 +382,9 @@ function login(){
   document.getElementById("mainLayout").style.display = "grid";
 
   // Admin vs User
-  if(pass === ADMIN_PASS){
+const adminCheck = await isAdmin(name);
+
+if(adminCheck){
     document.getElementById("adminPanel").style.display="block";
     document.getElementById("userPanel").style.display="none";
   } else {
