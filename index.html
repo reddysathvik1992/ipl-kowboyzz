@@ -21,6 +21,24 @@ h1 {
   margin: 15px 0;
 }
 
+#rulesBtn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: #ffd700;
+  color: black;
+  font-weight: bold;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+#rulesBtn:hover {
+  background: #e6c200;
+}
+
+
 /* ===================== */
 /* 🧱 LAYOUT */
 /* ===================== */
@@ -174,6 +192,7 @@ li {
 <body>
 
 <h1>🏏Kowboyzz Fantasy League | IPL 2026</h1>
+<button id="rulesBtn" onclick="openRules()">📜 Rules</button>
 
 <!-- LOGIN (VISIBLE FIRST) -->
 <div class="card" id="login">
@@ -191,46 +210,117 @@ li {
       <h3 id="welcome"></h3>
       <select id="match" onchange="updateTeams()"></select>
 
-      <label>Winner</label>
-      <select id="winner"></select>
+ <label>1. Match Winner(100)</label>
+<select id="winner"></select>
 
-      <label>Batsman</label>
-      <select id="batsman"><option>KOHLI</option><option>ROHIT</option></select>
+<label>2. Highest Runs(300)</label>
+<select id="topRuns"></select>
 
-      <label>Runs</label>
-      <select id="runs"><option>150+</option><option>180+</option><option>200+</option></select>
+<label>3. Highest Wicket Taker(300)</label>
+<select id="topWicket"></select>
 
-      <label>Wicket</label>
-      <select id="wicket"><option>1</option><option>2</option></select>
+<label>4. Best Strike Rate(300)</label>
+<select id="strikeRate"></select>
 
-      <label>Sixes</label>
-      <select id="sixes"><option>5+</option><option>10+</option></select>
+<label>5. Best Economy(300)</label>
+<select id="economy"></select>
 
-      <button class="submit" onclick="submitAnswer()">Submit</button>
+<label>6. Extras(500)</label>
+<select id="extras">
+  <option>&lt;14</option>
+  <option>14-20</option>
+  <option>20-25</option>
+  <option>25+</option>
+</select>
+
+<label>7. Boundaries(300)</label>
+<select id="boundaries">
+  <option>&lt;25</option>
+  <option>25-34</option>
+  <option>35-44</option>
+  <option>44-50</option>
+  <option>&gt;50</option>
+</select>
+
+<label>8. First Innings Runs(500)</label>
+<select id="inningsRuns">
+  <option>&lt;150</option>
+  <option>150-175</option>
+  <option>176-200</option>
+  <option>201-220</option>
+  <option>&gt;220</option>
+</select>
+
+<label>9. Margin of Win(200)</label>
+<select id="margin"></select>
+
+<label>10. Player of the Match(300)</label>
+<select id="motm"></select>
+
+<button class="submit" onclick="submitAnswer()">Submit</button>
     </div>
+	
+	<div class="card" id="resultComparison" style="display:none;">
+  <h3>📊 Your Performance</h3>
+  <div id="comparisonContent"></div>
+</div>
 
     <!-- ADMIN -->
     <div class="card" id="adminPanel" style="display:none;">
-      <h3>Admin Panel</h3>
-      <select id="adminMatch" onchange="updateAdminTeams()"></select>
+  <h3>Admin Panel</h3>
 
-      <label>Winner</label>
-      <select id="adminWinner"></select>
+  <label>Select Match</label>
+  <select id="adminMatch" onchange="updateAdminTeams()"></select>
 
-      <label>Batsman</label>
-      <select id="adminBatsman"><option>KOHLI</option><option>ROHIT</option></select>
+  <label>1. Match Winner(100)</label>
+  <select id="adminWinner"></select>
 
-      <label>Runs</label>
-      <select id="adminRuns"><option>150+</option><option>180+</option><option>200+</option></select>
+  <label>2. Highest Runs(300)</label>
+  <select id="adminTopRuns"></select>
 
-      <label>Wicket</label>
-      <select id="adminWicket"><option>1</option><option>2</option></select>
+  <label>3. Highest Wicket Taker(300)</label>
+  <select id="adminTopWicket"></select>
 
-      <label>Sixes</label>
-      <select id="adminSixes"><option>5+</option><option>10+</option></select>
+  <label>4. Best Strike Rate(300)</label>
+  <select id="adminStrikeRate"></select>
 
-      <button onclick="submitResult()">Save Result</button>
-    </div>
+  <label>5. Best Economy(300)</label>
+  <select id="adminEconomy"></select>
+
+  <label>6. Extras(500)</label>
+  <select id="adminExtras">
+  <option>&lt;14</option>
+  <option>14-20</option>
+  <option>20-25</option>
+  <option>25+</option>
+</select>
+
+  <label>7. Boundaries(300)</label>
+  <select id="adminBoundaries">
+  <option>&lt;25</option>
+  <option>25-34</option>
+  <option>35-44</option>
+  <option>44-50</option>
+  <option>&gt;50</option>
+</select>
+
+  <label>8. First Innings Runs(500)</label>
+<select id="adminInningsRuns">
+  <option>&lt;150</option>
+  <option>150-175</option>
+  <option>176-200</option>
+  <option>201-220</option>
+  <option>&gt;220</option>
+</select>
+
+  <label>9. Margin of Win(200)</label>
+<select id="adminMargin"></select>
+
+  <label>10. Player of the Match(300)</label>
+  <select id="adminMotm"></select>
+
+  <button onclick="submitResult()">Save Result</button>
+</div>
 
   </div>
 
@@ -276,7 +366,8 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const match = document.getElementById("match");
 const winner = document.getElementById("winner");
-const batsman = document.getElementById("batsman");
+const adminMatch = document.getElementById("adminMatch");
+const boardMatch = document.getElementById("boardMatch");
 
 const squads = {
   CSK: [
@@ -379,6 +470,67 @@ const squads = {
     "Jasprit Bumrah","Mayank Rawat","Ashwani Kumar"
   ]
 };
+
+async function showComparison(){
+
+  const user = localStorage.getItem("user");
+  const selectedMatch = matches.find(m => m.id === match.value);
+  if(!selectedMatch) return;
+
+  const matchKey = `${selectedMatch.home}_vs_${selectedMatch.away}`;
+
+  const ansDoc = await db
+    .collection("answers")
+    .doc(matchKey)
+    .collection("users")
+    .doc(user)
+    .get();
+
+  const resDoc = await db.collection("results").doc(matchKey).get();
+
+  if(!ansDoc.exists || !resDoc.exists){
+    document.getElementById("resultComparison").style.display="none";
+    return;
+  }
+
+  const a = ansDoc.data();
+  const r = resDoc.data();
+
+  let total = 0;
+
+function row(label, userVal, correctVal, points){
+  const correct = userVal === correctVal;
+  const pts = correct ? points : 0;
+  total += pts;
+
+  return `
+    <div style="margin:6px 0; color:${correct ? 'lightgreen' : 'salmon'}">
+      <b>${label}</b>: ${userVal}
+      ${correct ? '✅' : `❌ (Correct: ${correctVal})`}
+      ${correct ? `(+${pts})` : ''}
+    </div>
+  `;
+}
+
+  const html = `
+ ${row("Winner", a.winner, r.winner, 100)}
+${row("Top Runs", a.topRuns, r.topRuns, 300)}
+${row("Top Wicket", a.topWicket, r.topWicket, 300)}
+${row("Strike Rate", a.strikeRate, r.strikeRate, 300)}
+${row("Economy", a.economy, r.economy, 300)}
+${row("Extras", a.extras, r.extras, 500)}
+${row("Boundaries", a.boundaries, r.boundaries, 300)}
+${row("1st Innings", a.inningsRuns, r.inningsRuns, 500)}
+${row("Margin", a.margin, r.margin, 200)}
+${row("MOTM", a.motm, r.motm, 300)}
+
+    <hr>
+    <h3>Total Score: ${total}</h3>
+  `;
+
+  document.getElementById("comparisonContent").innerHTML = html;
+  document.getElementById("resultComparison").style.display="block";
+}
 
 async function isAdmin(user){
   const doc = await db.collection("admins").doc(user).get();
@@ -505,8 +657,18 @@ async function login(){
   }
 
   loadMatches();
+  
+  matches.forEach(m => {
+  const matchKey = `${m.home}_vs_${m.away}`;
 
-  db.collection("answers").onSnapshot(loadBoards);
+  db.collection("answers")
+    .doc(matchKey)
+    .collection("users")
+    .onSnapshot(() => {
+      loadBoards();
+    });
+});
+
   db.collection("results").onSnapshot(loadBoards);
 
   loadBoards();
@@ -531,6 +693,7 @@ async function updateTeams(){
   const m = matches.find(x=>x.id===match.value);
   if(!m) return;
 
+  // Winner
   winner.innerHTML = `<option>${m.home}</option><option>${m.away}</option>`;
 
   const homeplayers = squads[m.home] || [];
@@ -538,26 +701,113 @@ async function updateTeams(){
 
   const allplayers = [...homeplayers, ...awayplayers];
 
-  batsman.innerHTML = allplayers
-    .map(p => `<option>${p}</option>`)
-    .join("");
+  const options = allplayers.map(p => `<option>${p}</option>`).join("");
+  const t1 = m.home;
+const t2 = m.away;
+
+margin.innerHTML = `
+  <option>${t1} win by more than 15 runs</option>
+  <option>${t1} win by less than 15 runs</option>
+  <option>${t1} win by greater than 5 wickets</option>
+  <option>${t1} win by less than 5 wickets</option>
+
+  <option>${t2} win by more than 15 runs</option>
+  <option>${t2} win by less than 15 runs</option>
+  <option>${t2} win by greater than 5 wickets</option>
+  <option>${t2} win by less than 5 wickets</option>
+`;
+
+  // Apply to all player-based fields
+  topRuns.innerHTML = options;
+  topWicket.innerHTML = options;
+  strikeRate.innerHTML = options;
+  economy.innerHTML = options;
+  motm.innerHTML = options;
+  
+  loadUserAnswers();
+  showComparison();
+}
+
+async function loadUserAnswers(){
+
+  const user = localStorage.getItem("user");
+  if(!user) return;
+
+  const selectedMatch = matches.find(m => m.id === match.value);
+  if(!selectedMatch) return;
+
+  const matchKey = `${selectedMatch.home}_vs_${selectedMatch.away}`;
+
+  const doc = await db
+    .collection("answers")
+    .doc(matchKey)
+    .collection("users")
+    .doc(user)
+    .get();
+
+  if(!doc.exists){
+    return; // no previous answers
+  }
+
+  const data = doc.data();
+
+  // 🔥 Auto-fill all fields
+  winner.value = data.winner || "";
+  topRuns.value = data.topRuns || "";
+  topWicket.value = data.topWicket || "";
+  strikeRate.value = data.strikeRate || "";
+  economy.value = data.economy || "";
+  extras.value = data.extras || "";
+  boundaries.value = data.boundaries || "";
+  inningsRuns.value = data.inningsRuns || "";
+  margin.value = data.margin || "";
+  motm.value = data.motm || "";
+
+  console.log("Answers loaded ✅");
 }
 
 function updateAdminTeams(){
   const m = matches.find(x=>x.id===adminMatch.value);
+
   adminWinner.innerHTML = `<option>${m.home}</option><option>${m.away}</option>`;
+
+  const homeplayers = squads[m.home] || [];
+  const awayplayers = squads[m.away] || [];
+
+  const allplayers = [...homeplayers, ...awayplayers];
+  const options = allplayers.map(p => `<option>${p}</option>`).join("");
+  
+  const t1 = m.home;
+const t2 = m.away;
+
+adminMargin.innerHTML = `
+  <option>${t1} win by more than 15 runs</option>
+  <option>${t1} win by less than 15 runs</option>
+  <option>${t1} win by greater than 5 wickets</option>
+  <option>${t1} win by less than 5 wickets</option>
+
+  <option>${t2} win by more than 15 runs</option>
+  <option>${t2} win by less than 15 runs</option>
+  <option>${t2} win by greater than 5 wickets</option>
+  <option>${t2} win by less than 5 wickets</option>
+`;
+
+  adminTopRuns.innerHTML = options;
+  adminTopWicket.innerHTML = options;
+  adminStrikeRate.innerHTML = options;
+  adminEconomy.innerHTML = options;
+  adminMotm.innerHTML = options;
 }
 
 async function submitAnswer(){
 
-  const user = localStorage.getItem("user");
-  const selectedMatch = matches.find(m => m.id === match.value);
-
   if(isMatchLocked(match.value)){
-    alert("Prediction Locked 🔒");
+    alert("Match already started. Cannot edit ❌");
     return;
   }
 
+  const user = localStorage.getItem("user");
+  const selectedMatch = matches.find(m => m.id === match.value);
   const matchKey = `${selectedMatch.home}_vs_${selectedMatch.away}`;
 
   await db
@@ -566,29 +816,45 @@ async function submitAnswer(){
     .collection("users")
     .doc(user)
     .set({
-      match: `${selectedMatch.home} vs ${selectedMatch.away}`,
       winner: winner.value,
-      batsman: batsman.value,
-      runs: runs.value,
-      wicket: wicket.value,
-      sixes: sixes.value,
+      topRuns: topRuns.value,
+      topWicket: topWicket.value,
+      strikeRate: strikeRate.value,
+      economy: economy.value,
+      extras: extras.value,
+      boundaries: boundaries.value,
+      inningsRuns: inningsRuns.value,
+      margin: margin.value,
+      motm: motm.value,
       updatedAt: new Date()
     });
 
-  alert("Saved / Updated ✅");
+  alert("Saved ✅");
 }
+
+
 
 async function submitResult(){
 
   const selectedMatch = matches.find(m => m.id === adminMatch.value);
+  if(!selectedMatch){
+    alert("Select match first ❌");
+    return;
+  }
+
   const matchKey = `${selectedMatch.home}_vs_${selectedMatch.away}`;
 
   await db.collection("results").doc(matchKey).set({
     winner: adminWinner.value,
-    batsman: adminBatsman.value,
-    runs: adminRuns.value,
-    wicket: adminWicket.value,
-    sixes: adminSixes.value
+    topRuns: adminTopRuns.value,
+    topWicket: adminTopWicket.value,
+    strikeRate: adminStrikeRate.value,
+    economy: adminEconomy.value,
+    extras: adminExtras.value,
+    boundaries: adminBoundaries.value,
+    inningsRuns: adminInningsRuns.value,
+    margin: adminMargin.value,
+    motm: adminMotm.value
   });
 
   alert("Result saved ✅");
@@ -646,11 +912,16 @@ async function loadBoards(){
         const r = results[m];
 
         let score = 0;
-        if(a.winner===r.winner) score+=10;
-        if(a.batsman===r.batsman) score+=10;
-        if(a.runs===r.runs) score+=10;
-        if(a.wicket===r.wicket) score+=10;
-        if(a.sixes===r.sixes) score+=10;
+       if(a.winner===r.winner) score+=100;
+if(a.topRuns===r.topRuns) score+=300;
+if(a.topWicket===r.topWicket) score+=300;
+if(a.strikeRate===r.strikeRate) score+=300;
+if(a.economy===r.economy) score+=300;
+if(a.extras===r.extras) score+=500;
+if(a.boundaries===r.boundaries) score+=300;
+if(a.inningsRuns===r.inningsRuns) score+=500;
+if(a.margin===r.margin) score+=200;
+if(a.motm===r.motm) score+=300;
 
         matchScores.push({user, score});
       });
@@ -695,11 +966,16 @@ async function loadBoards(){
       const r = results[matchKey];
 
       let score = 0;
-      if(a.winner===r.winner) score+=10;
-      if(a.batsman===r.batsman) score+=10;
-      if(a.runs===r.runs) score+=10;
-      if(a.wicket===r.wicket) score+=10;
-      if(a.sixes===r.sixes) score+=10;
+if(a.winner===r.winner) score+=100;
+if(a.topRuns===r.topRuns) score+=300;
+if(a.topWicket===r.topWicket) score+=300;
+if(a.strikeRate===r.strikeRate) score+=300;
+if(a.economy===r.economy) score+=300;
+if(a.extras===r.extras) score+=500;
+if(a.boundaries===r.boundaries) score+=300;
+if(a.inningsRuns===r.inningsRuns) score+=500;
+if(a.margin===r.margin) score+=200;
+if(a.motm===r.motm) score+=300;
 
       overall[user] = (overall[user] || 0) + score;
     });
@@ -745,6 +1021,8 @@ async function loadBoards(){
     `;
   }).join("") +
   `<tr><td colspan="3"><button onclick="showAllOverall()">View All</button></td></tr>`;
+  
+  showComparison();
 }
 
 function showAllMatch(){
@@ -764,7 +1042,51 @@ function showAllOverall(){
   `).join("");
 }
 
+function openRules(){
+  document.getElementById("rulesModal").style.display = "block";
+}
+
+function closeRules(){
+  document.getElementById("rulesModal").style.display = "none";
+}
+
+window.onclick = function(e){
+  const modal = document.getElementById("rulesModal");
+  if(e.target === modal){
+    modal.style.display = "none";
+  }
+}
+
 </script>
+</div>
+<div id="rulesModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000;">
+
+  <div style="
+    background:#1e2d44;
+    color:white;
+    width:80%;
+    max-width:500px;
+    margin:100px auto;
+    padding:20px;
+    border-radius:10px;
+    position:relative;
+  ">
+
+    <h3 style="text-align:center; color:#ffd700;">📜 Rules</h3>
+
+    <ul style="line-height:1.6;">
+      <li>If multiple players have same highest runs, boundary count is considered, then strike rate.</li>
+      <li>If multiple players have same highest wickets, economy rate is considered.</li>
+    </ul>
+
+    <button onclick="closeRules()" style="
+      width:100%;
+      margin-top:15px;
+      background:#28a745;
+      color:white;
+    ">Close</button>
+
+  </div>
 </div>
 </body>
 </html>
