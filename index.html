@@ -21,22 +21,37 @@ h1 {
   margin: 15px 0;
 }
 
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 15px 20px;
+}
+
+.header h1 {
+  text-align: center;
+  margin: 0;
+  font-size: 26px;
+  font-weight: bold;
+}
+
 #rulesBtn {
-  position: absolute;
-  top: 15px;
-  right: 20px;
+  justify-self: end;
   background: #ffd700;
   color: black;
   font-weight: bold;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
+  font-size: 13px;
+  width: auto;   /* 🔥 important fix */
 }
 
 #rulesBtn:hover {
   background: #e6c200;
 }
+
 
 
 /* ===================== */
@@ -107,7 +122,7 @@ select option {
 /* 🔘 BUTTONS */
 /* ===================== */
 button {
-  width: 100%;
+  width: auto;
   padding: 10px;
   margin-top: 10px;
   border-radius: 6px;
@@ -191,8 +206,13 @@ li {
 
 <body>
 
-<h1>🏏Kowboyzz Fantasy League | IPL 2026</h1>
-<button id="rulesBtn" onclick="openRules()">📜 Rules</button>
+<div class="header">
+  <div></div> <!-- empty spacer -->
+  
+  <h1>🏏 Kowboyzz Fantasy League | IPL 2026</h1>
+  
+  <button id="rulesBtn" onclick="openRules()">📜 Rules</button>
+</div>
 
 <!-- LOGIN (VISIBLE FIRST) -->
 <div class="card" id="login">
